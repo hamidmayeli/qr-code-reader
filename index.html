@@ -6,7 +6,7 @@
     <title>QR Code Toolkit</title>
     
     <script src="https://unpkg.com/html5-qrcode"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     
     <style>
         body {
@@ -83,7 +83,7 @@
         button:hover { background-color: #0056b3; }
         button:active { background-color: #004494; }
 
-        /* Scanner Styling */
+        /* Scanner Specific */
         #reader {
             width: 100%;
             background: #fff;
@@ -118,7 +118,7 @@
             text-align: center;
         }
 
-        /* Generator Styling */
+        /* Generator Specific */
         textarea {
             width: 100%;
             box-sizing: border-box;
@@ -133,7 +133,7 @@
         #qr-output-container {
             margin-top: 25px;
             padding: 20px;
-            background: #eef0f5; /* Contrasting background to show the canvas white border */
+            background: #eef0f5; /* Subtle background contrast to highlight the pristine white image border */
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: none;
@@ -147,6 +147,7 @@
             max-width: 100%;
             height: auto;
             border-radius: 4px;
+            background-color: #ffffff;
         }
     </style>
 </head>
@@ -201,7 +202,7 @@
             resultContainer.style.display = 'flex';
         }
 
-        function onScanFailure(error) { /* Silently ignore frame failures */ }
+        function onScanFailure(error) {}
 
         const html5QrcodeScanner = new Html5QrcodeScanner(
             "reader",
@@ -240,6 +241,7 @@
         const generateBtn = document.getElementById('generate-btn');
         const textInput = document.getElementById('text-input');
         const qrOutputContainer = document.getElementById('qr-output-container');
+        const canvasElement = document.getElementById('qrcode');
 
         generateBtn.addEventListener('click', () => {
             const text = textInput.value.trim();
@@ -250,15 +252,20 @@
 
             qrOutputContainer.style.display = 'flex';
 
-            // Generate using QRious library
-            new QRious({
-                element: document.getElementById('qrcode'),
-                value: text,
-                size: 260,       // Total width/height of the resulting image source
-                padding: 25,     // Native padding baked inside the source image (in pixels)
-                level: 'H',      // High error correction capacity
-                background: '#ffffff',
-                foreground: '#000000'
+            // Clean, beautifully centered generation
+            QRCode.toCanvas(canvasElement, text, {
+                width: 280,
+                margin: 4,  // 4 blocks of protective white margin built directly into the file output
+                color: {
+                    dark: '#000000',
+                    light: '#ffffff'
+                },
+                errorCorrectionLevel: 'H'
+            }, function (error) {
+                if (error) {
+                    console.error(error);
+                    alert('Error generating QR Code.');
+                }
             });
         });
     </script>
