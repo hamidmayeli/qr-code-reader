@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code Toolkit</title>
     
+    <link rel="icon" href="icon.png" type="image/png">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="QR Code Toolkit">
+    <meta property="og:description" content="Scan QR codes with your camera or generate them instantly with built-in padding.">
+    <meta property="og:image" content="icon.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="300">
+    <meta property="og:image:height" content="300">
+
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     
@@ -133,7 +143,7 @@
         #qr-output-container {
             margin-top: 25px;
             padding: 20px;
-            background: #eef0f5; /* Subtle background contrast to highlight the pristine white image border */
+            background: #eef0f5;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             display: none;
@@ -252,10 +262,9 @@
 
             qrOutputContainer.style.display = 'flex';
 
-            // Clean, beautifully centered generation
             QRCode.toCanvas(canvasElement, text, {
                 width: 280,
-                margin: 4,  // 4 blocks of protective white margin built directly into the file output
+                margin: 4, 
                 color: {
                     dark: '#000000',
                     light: '#ffffff'
