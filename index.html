@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>QR Code Toolkit</title>
     
-    <!-- Library for Scanning QR Codes -->
     <script src="https://unpkg.com/html5-qrcode"></script>
-    <!-- Library for Generating QR Codes -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <style>
@@ -22,7 +20,6 @@
             margin: 0;
         }
 
-        /* --- Header & Tabs Styling --- */
         .header {
             width: 100%;
             background-color: #fff;
@@ -56,9 +53,8 @@
             background-color: #f8f9fa;
         }
 
-        /* --- View Container Styling --- */
         .view {
-            display: none; /* Hidden by default */
+            display: none;
             width: 100%;
             max-width: 500px;
             flex-direction: column;
@@ -67,10 +63,9 @@
             box-sizing: border-box;
         }
         .view.active {
-            display: flex; /* Shown when active */
+            display: flex;
         }
 
-        /* --- Shared & Specific UI Elements --- */
         h2 {
             margin-top: 0;
             font-size: 1.3rem;
@@ -89,14 +84,9 @@
             max-width: 300px;
             margin-top: 10px;
         }
-        button:hover {
-            background-color: #0056b3;
-        }
-        button:active {
-            background-color: #004494;
-        }
+        button:hover { background-color: #0056b3; }
+        button:active { background-color: #004494; }
 
-        /* Scanner Specific */
         #reader {
             width: 100%;
             background: #fff;
@@ -124,8 +114,13 @@
             font-family: monospace;
             border: 1px solid #ddd;
         }
+        .focus-tip {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 15px;
+            text-align: center;
+        }
 
-        /* Generator Specific */
         textarea {
             width: 100%;
             box-sizing: border-box;
@@ -143,7 +138,7 @@
             background: #fff;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            display: none; /* Hidden until generated */
+            display: none;
             justify-content: center;
             align-items: center;
         }
@@ -151,7 +146,6 @@
 </head>
 <body>
 
-    <!-- Header with Tabs -->
     <div class="header">
         <div class="tabs">
             <div class="tab active" onclick="switchTab('scan', this)">Scan QR</div>
@@ -159,9 +153,9 @@
         </div>
     </div>
     
-    <!-- VIEW 1: Scanner (Default) -->
     <div id="view-scan" class="view active">
         <h2>Scan a Code</h2>
+        <div class="focus-tip"><strong>Tip:</strong> If it's blurry, pull your camera further away.</div>
         <div id="reader"></div>
 
         <div id="result-container">
@@ -171,7 +165,6 @@
         </div>
     </div>
 
-    <!-- VIEW 2: Generator -->
     <div id="view-generate" class="view">
         <h2>Create a Code</h2>
         <textarea id="text-input" rows="4" placeholder="Enter text or URL to generate QR code..."></textarea>
@@ -183,22 +176,14 @@
     </div>
 
     <script>
-        /* =========================================
-           TAB SWITCHING LOGIC
-        ========================================= */
         function switchTab(viewId, tabElement) {
-            // Remove active class from all tabs and views
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            
-            // Add active class to clicked tab and corresponding view
             tabElement.classList.add('active');
             document.getElementById('view-' + viewId).classList.add('active');
         }
 
-        /* =========================================
-           QR SCANNER LOGIC
-        ========================================= */
+        // --- SCANNER LOGIC ---
         const resultContainer = document.getElementById('result-container');
         const qrDataDisplay = document.getElementById('qr-data');
         const copyBtn = document.getElementById('copy-btn');
@@ -214,14 +199,23 @@
             // Silently ignore frame failures
         }
 
+        // Initialize with enhanced video constraints for better focus
         const html5QrcodeScanner = new Html5QrcodeScanner(
             "reader",
-            { fps: 10, qrbox: {width: 250, height: 250} },
+            { 
+                fps: 10, 
+                qrbox: {width: 250, height: 250},
+                videoConstraints: {
+                    facingMode: "environment", // Force back camera
+                    width: { ideal: 1280 },    // Higher resolution helps read small details
+                    height: { ideal: 720 },
+                    advanced: [{ focusMode: "continuous" }] // Try to force autofocus hardware
+                }
+            },
             false
         );
         html5QrcodeScanner.render(onScanSuccess, onScanFailure);
 
-        // Copy to clipboard
         copyBtn.addEventListener('click', async () => {
             try {
                 await navigator.clipboard.writeText(scannedText);
@@ -239,31 +233,23 @@
             }
         });
 
-        /* =========================================
-           QR GENERATOR LOGIC
-        ========================================= */
+        // --- GENERATOR LOGIC ---
         const generateBtn = document.getElementById('generate-btn');
         const textInput = document.getElementById('text-input');
         const qrOutputContainer = document.getElementById('qr-output-container');
         const qrcodeDiv = document.getElementById('qrcode');
-        let qrCodeInstance = null;
 
         generateBtn.addEventListener('click', () => {
             const text = textInput.value.trim();
-            
             if (!text) {
                 alert('Please enter some text or a URL first.');
                 return;
             }
 
-            // Clear previous QR code if it exists
             qrcodeDiv.innerHTML = '';
-            
-            // Show the container
             qrOutputContainer.style.display = 'flex';
 
-            // Generate the new QR code
-            qrCodeInstance = new QRCode(qrcodeDiv, {
+            new QRCode(qrcodeDiv, {
                 text: text,
                 width: 200,
                 height: 200,
