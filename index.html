@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+        }
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+        #reader {
+            width: 100%;
+            max-width: 500px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        #result-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 470px;
+            display: none; /* Hidden until a code is scanned */
+            flex-direction: column;
+            gap: 10px;
+        }
+        #qr-data {
+            word-break: break-all;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            font-family: monospace;
+            border: 1px solid #ddd;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:active {
+            background-color: #004494;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>QR Code Scanner</h1>
+    
+    <div id="reader"></div>
+
+    <div id="result-container">
+        <strong>Scanned Data:</strong>
+        <div id="qr-data"></div>
+        <button id="copy-btn">Copy to Clipboard</button>
+    </div>
+
+    <script>
+        // DOM Elements
+        const resultContainer = document.getElementById('result-container');
+        const qrDataDisplay = document.getElementById('qr-data');
+        const copyBtn = document.getElementById('copy-btn');
+        let scannedText = '';
+
+        // Callback function when a QR code is successfully scanned
+        function onScanSuccess(decodedText, decodedResult) {
+            scannedText = decodedText;
+            qrDataDisplay.innerText = decodedText;
+            resultContainer.style.display = 'flex'; // Reveal the result container
+        }
+
+        // Callback function for scan errors (triggers on every frame that doesn't have a QR code)
+        function onScanFailure(error) {
+            // We ignore failures here so it keeps silently scanning until it finds a code
+        }
+
+        // Initialize the Scanner
+        const html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader",
+            { 
+                fps: 10, // Frames per second to scan
+                qrbox: {width: 250, height: 250} // Size of the scanning box
+            },
+            false // verbose flag
+        );
+        
+        // Start rendering the camera feed
+        html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+
+        // Handle Copy to Clipboard functionality
+        copyBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(scannedText);
+                
+                // Visual feedback
+                const originalText = copyBtn.innerText;
+                copyBtn.innerText = 'Copied!';
+                copyBtn.style.backgroundColor = '#28a745'; // Change to green
+                
+                // Reset button text after 2 seconds
+                setTimeout(() => {
+                    copyBtn.innerText = originalText;
+                    copyBtn.style.backgroundColor = '#007bff';
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy text. Your browser may not support this feature.');
+            }
+        });
+    </script>
+</body>
+</html>
